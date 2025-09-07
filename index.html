@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample Website with Chatbot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Fredoka+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Sample website styles */
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        
+        .website-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .website-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="a" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="white" stop-opacity="0.1"/><stop offset="100%" stop-color="white" stop-opacity="0"/></radialGradient></defs><circle cx="10" cy="10" r="8" fill="url(%23a)"/><circle cx="90" cy="10" r="8" fill="url(%23a)"/></svg>') repeat;
+            opacity: 0.1;
+        }
+        
+        .website-header h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3em;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .website-header p {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2em;
+            margin: 10px 0 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .website-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .content-section {
+            background: white;
+            margin: 20px 0;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .content-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .content-section h2 {
+            font-family: 'Poppins', sans-serif;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        /* Notification animation */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        /* CHATBOT POPUP STYLES */
+        .chatbot-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .chatbot-toggle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 3px solid white;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chatbot-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .chatbot-toggle:hover::before {
+            left: 100%;
+        }
+        
+        .chatbot-toggle:hover {
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.6);
+        }
+        
+        .chatbot-popup {
+            position: absolute;
+            bottom: 90px;
+            right: 0;
+            width: 400px;
+            height: 550px;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(102, 126, 234, 0.1);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .chatbot-popup.active {
+            display: flex;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .chatbot-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chatbot-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="white" stop-opacity="0.1"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient></defs><circle cx="10" cy="10" r="2" fill="url(%23grad)"/><circle cx="50" cy="30" r="3" fill="url(%23grad)"/><circle cx="30" cy="50" r="2" fill="url(%23grad)"/></svg>') repeat;
+            opacity: 0.3;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .bot-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .bot-avatar::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: #28a745;
+            border: 2px solid white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .header-text h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .status {
+            font-size: 13px;
+            opacity: 0.9;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status::before {
+            content: '●';
+            color: #28a745;
+            animation: pulse 2s infinite;
+        }
+        
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+        }
+        
+        .close-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            position: relative;
+        }
+        
+        .chat-messages::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(102,126,234,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+            pointer-events: none;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+            animation: messageSlide 0.3s ease;
+        }
+        
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message.user-message {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            border: 2px solid white;
+        }
+        
+        .user-message .message-avatar {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        
+        .message-content {
+            background: white;
+            padding: 15px 18px;
+            border-radius: 20px;
+            max-width: 280px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 14px;
+            line-height: 1.5;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+        
+        .message-content::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: -8px;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid white;
+        }
+        
+        .user-message .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .user-message .message-content::before {
+            left: auto;
+            right: -8px;
+            border-right: none;
+            border-left: 8px solid #667eea;
+        }
+        
+        .quick-questions {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid rgba(102, 126, 234, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+        
+        .quick-question {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            border-radius: 25px;
+            padding: 8px 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quick-question::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .quick-question:hover::before {
+            left: 100%;
+        }
+        
+        .quick-question:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .chat-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid rgba(102, 126, 234, 0.1);
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+            resize: none;
+            max-height: 80px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            background: rgba(248, 249, 250, 0.5);
+        }
+        
+        .chat-input:focus {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .send-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            font-size: 16px;
+        }
+        
+        .send-btn:hover:not(:disabled) {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .send-btn:disabled {
+            background: linear-gradient(135deg, #ccc 0%, #999 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 480px) {
+            .chatbot-popup {
+                width: 95vw;
+                height: 75vh;
+                right: 2.5vw;
+                bottom: 90px;
+                border-radius: 20px;
+            }
+            
+            .chatbot-widget {
+                bottom: 15px;
+                right: 15px;
+            }
+            
+            .chatbot-toggle {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+        }
+        
+        /* Notification badge */
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounce 2s infinite;
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
+            border: 2px solid white;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-8px); }
+            60% { transform: translateY(-4px); }
+        }
+        
+        /* Scrollbar styling */
+        .chat-messages::-webkit-scrollbar,
+        .quick-questions::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track,
+        .quick-questions::-webkit-scrollbar-track {
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 3px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb,
+        .quick-questions::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
+        }
+        
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 15px 18px;
+            background: white;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { 
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sample Website Content -->
+    <div class="website-header">
+        <h1>🎯 Prime Events Committee 2025</h1>
+        <p>✨ Official website for Prime Outing 2025 ✨</p>
+    </div>
+    
+    <div class="website-content">
+        <div class="content-section">
+            <h2><i class="fas fa-mountain"></i> Welcome to Prime Outing 2025</h2>
+            <p>We're excited to announce our upcoming team outing to Dehradun from October 3-5, 2025. This will be an amazing opportunity for team bonding, fun activities, and creating lasting memories.</p>
+            <p>For any questions about the trip, itinerary, or logistics, please use our <strong>AI chatbot assistant</strong> available in the bottom-right corner of this page.</p>
+        </div>
+        
+        <div class="content-section">
+            <h2><i class="fas fa-star"></i> Trip Highlights</h2>
+            <ul style="list-style: none; padding: 0;">
+                <li style="padding: 8px 0;"><i class="fas fa-hotel" style="color: #667eea; margin-right: 10px;"></i> Stay at Punarnava Resort & Spa, Dehradun</li>
+                <li style="padding: 8px 0;"><i class="fas fa-users" style="color: #667eea; margin-right: 10px;"></i> Team building activities</li>
+                <li style="padding: 8px 0;"><i class="fas fa-music" style="color: #667eea; margin-right: 10px;"></i> DJ night and dancing</li>
+                <li style="padding: 8px 0;"><i class="fas fa-star" style="color: #667eea; margin-right: 10px;"></i> Stargazing under "Taaron ki chaanv"</li>
+                <li style="padding: 8px 0;"><i class="fas fa-camera" style="color: #667eea; margin-right: 10px;"></i> Group photography session</li>
+                <li style="padding: 8px 0;"><i class="fas fa-swimmer" style="color: #667eea; margin-right: 10px;"></i> Swimming pool access</li>
+            </ul>
+        </div>
+        
+        <div class="content-section">
+            <h2><i class="fas fa-info-circle"></i> Important Information</h2>
+            <p>Don't forget to collect your custom Prime Outing 2025 T-shirts and follow all the guidelines for a smooth trip. Use the <strong>chatbot</strong> for detailed information about timings, what to bring, and much more!</p>
+            <p style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; margin-top: 15px;">
+                <i class="fas fa-robot"></i> <strong>Pro Tip:</strong> Click the chat button in the bottom-right corner to get instant answers to all your Prime Outing 2025 questions!
+            </p>
+        </div>
+    </div>
+    
+    <!-- CHATBOT WIDGET -->
+    <div class="chatbot-widget">
+        <button class="chatbot-toggle" onclick="toggleChatbot()">
+            <span id="toggleIcon">💬</span>
+            <div class="notification-badge" id="notificationBadge">!</div>
+        </button>
+        
+        <div class="chatbot-popup" id="chatbotPopup">
+            <div class="chatbot-header">
+                <div class="header-content">
+                    <div class="bot-avatar">🤖</div>
+                    <div class="header-text">
+                        <h3>Prime Outing Assistant</h3>
+                        <div class="status">Online & Ready to Help</div>
+                    </div>
+                </div>
+                <button class="close-btn" onclick="toggleChatbot()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <strong>Hello! 👋</strong><br>
+                        I'm your <em>Prime Outing 2025 Assistant</em>. I can help with trip information, itinerary details, T-shirt collection, and answer any questions about our amazing Dehradun adventure!
+                        <br><br>
+                        <i class="fas fa-id-card" style="color: #667eea;"></i> <strong>Type your Employee ID</strong> to get your bus and room assignments!
+                        <br><br>
+                        <i class="fas fa-lightbulb" style="color: #667eea;"></i> <small><em>Try the quick buttons below or type your question!</em></small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="quick-questions">
+                <div class="quick-question" onclick="sendQuickQuestion('My bus information')">
+                    <i class="fas fa-bus"></i> Get Bus Info
+                </div>
+                <div class="quick-question" onclick="sendQuickQuestion('When is the trip?')">
+                    <i class="fas fa-calendar-alt"></i> Trip Dates
+                </div>
+                <div class="quick-question" onclick="sendQuickQuestion('Where are we staying?')">
+                    <i class="fas fa-hotel"></i> Accommodation
+                </div>
+                <div class="quick-question" onclick="sendQuickQuestion('What activities are planned?')">
+                    <i class="fas fa-gamepad"></i> Activities
+                </div>
+                <div class="quick-question" onclick="sendQuickQuestion('T-shirt collection details')">
+                    <i class="fas fa-tshirt"></i> T-shirts
+                </div>
+                <div class="quick-question" onclick="sendQuickQuestion('Complete itinerary')">
+                    <i class="fas fa-list-ul"></i> Itinerary
+                </div>
+                <div class="quick-question" onclick="sendQuickQuestion('What to bring?')">
+                    <i class="fas fa-suitcase"></i> Packing
+                </div>
+                <div class="quick-question" onclick="sendQuickQuestion('DJ night details')">
+                    <i class="fas fa-music"></i> DJ Night
+                </div>
+                <div class="quick-question" onclick="sendQuickQuestion('Contact information')">
+                    <i class="fas fa-phone"></i> Contact
+                </div>
+                <div class="quick-question" onclick="sendQuickQuestion('Important reminders')">
+                    <i class="fas fa-exclamation-triangle"></i> Important Reminders
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <textarea class="chat-input" id="userInput" placeholder="Type your message here..." rows="1"></textarea>
+                <button class="send-btn" id="sendButton" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include XLSX library for Excel processing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Employee data storage with localStorage persistence
+        let employeeData = [];
+        let isOpen = false;
+        let hasNewMessage = false;
+
+        // Load employee data from localStorage on page load
+        function loadEmployeeDataFromStorage() {
+            try {
+                const storedData = localStorage.getItem('primeOuting2025_employeeData');
+                const storedTimestamp = localStorage.getItem('primeOuting2025_dataTimestamp');
+                
+                if (storedData && storedTimestamp) {
+                    employeeData = JSON.parse(storedData);
+                    const uploadDate = new Date(parseInt(storedTimestamp));
+                    console.log(`Employee data loaded from storage: ${employeeData.length} records`);
+                    console.log(`Data uploaded on: ${uploadDate.toLocaleString()}`);
+                    
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('Error loading employee data from storage:', error);
+                return false;
+            }
+        }
+
+        // Save employee data to localStorage
+        function saveEmployeeDataToStorage(data) {
+            try {
+                localStorage.setItem('primeOuting2025_employeeData', JSON.stringify(data));
+                localStorage.setItem('primeOuting2025_dataTimestamp', Date.now().toString());
+                console.log('Employee data saved to storage');
+                return true;
+            } catch (error) {
+                console.error('Error saving employee data to storage:', error);
+                return false;
+            }
+        }
+
+        // Clear employee data from localStorage
+        function clearEmployeeDataFromStorage() {
+            try {
+                localStorage.removeItem('primeOuting2025_employeeData');
+                localStorage.removeItem('primeOuting2025_dataTimestamp');
+                employeeData = [];
+                console.log('Employee data cleared from storage');
+                return true;
+            } catch (error) {
+                console.error('Error clearing employee data from storage:', error);
+                return false;
+            }
+        }
+
+        // Load PECData.xlsx automatically when page loads
+        async function loadPECDataFile() {
+            try {
+                console.log('Attempting to load PECData.xlsx...');
+                
+                // Try to fetch the Excel file from the same directory
+                const response = await fetch('./PECData.xlsx');
+                
+                if (!response.ok) {
+                    console.log('PECData.xlsx not found in same directory');
+                    return false;
+                }
+                
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                // Get the first worksheet
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // Convert to JSON with headers
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                
+                if (jsonData && jsonData.length > 0) {
+                    // Update global employee data
+                    employeeData = jsonData;
+                    
+                    // Save to storage for future use
+                    saveEmployeeDataToStorage(jsonData);
+                    
+                    console.log(`✅ PECData.xlsx loaded successfully: ${jsonData.length} records`);
+                    console.log('Sample data:', jsonData.slice(0, 2));
+                    
+                    return true;
+                } else {
+                    console.log('❌ PECData.xlsx contains no valid data');
+                    return false;
+                }
+                
+            } catch (error) {
+                console.error('Error loading PECData.xlsx:', error);
+                return false;
+            }
+        }
+
+        // Load data when page loads
+        window.addEventListener('DOMContentLoaded', async function() {
+            // First try to load from storage
+            const hasStoredData = loadEmployeeDataFromStorage();
+            
+            // If no stored data, try to load PECData.xlsx
+            if (!hasStoredData) {
+                console.log('No stored data found, attempting to load PECData.xlsx...');
+                await loadPECDataFile();
+            } else {
+                console.log('Using stored employee data');
+            }
+        });
+
+        // SELF-CONTAINED CHATBOT FUNCTIONS - No dependency on script.js
+        
+        // Add message to chat
+        function addMessage(message, sender) {
+            console.log('Adding message:', message, 'from:', sender);
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            if (sender === 'bot') {
+                avatar.textContent = '🤖';
+            }
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            
+            const paragraph = document.createElement('p');
+            paragraph.innerHTML = message.replace(/\n/g, '<br>');
+            content.appendChild(paragraph);
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            
+            chatMessages.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            console.log('Showing typing indicator');
+            const chatMessages = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot-message';
+            typingDiv.id = 'typing-indicator';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = '🤖';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content typing-indicator';
+            
+            // Create typing dots
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('span');
+                dot.style.cssText = 'width: 8px; height: 8px; border-radius: 50%; background: #667eea; animation: typing 1.4s infinite ease-in-out both; margin-right: 4px; display: inline-block;';
+                dot.style.animationDelay = (i * 0.16) + 's';
+                content.appendChild(dot);
+            }
+            
+            typingDiv.appendChild(avatar);
+            typingDiv.appendChild(content);
+            
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            console.log('Hiding typing indicator');
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Basic responses for non-employee queries
+        // NOW USING RESPONSES FROM script.js INSTEAD OF LOCAL basicResponses
+        const basicResponses = {
+            'hello': "Hello! Welcome to Prime Outing 2025 Chatbot. How can I help you today?",
+            'hi': "Hi there! I'm here to assist you with any questions about Prime Outing 2025.",
+            'help': "I can help you with Prime Outing 2025 information and employee bus/room details. Just ask!",
+            'when': "Prime Outing 2025 is scheduled for **October 3-5, 2025** to Dehradun!\n\n📅 **Duration:** 2 Days, 1 Night\n🏨 **Destination:** Punarnava Resort, Dehradun\n📧 **Questions?** PrimeEventCommittee@tsys.com",
+            'where': "We're going to **Punarnava Resort, Dehradun** for our Prime Outing 2025!\n\n🏔️ **Location:** Dehradun, Uttarakhand\n⏱️ **Journey Time:** About 8 hours from departure\n🚌 **Mode:** Comfortable bus travel",
+            'activities': "🎉 **Prime Outing 2025 Activities:**\n\n🎵 **DJ Night** - Dance the night away!\n🏆 **Team Building Activities** - Fun group challenges\n🌟 **Stargazing** - Under \"Taaron ki chaanv\"\n📸 **Group Photography** - Capture memories\n🏊 **Swimming Pool** - Relax and unwind\n🍽️ **Great Food** - Delicious meals\n\n*More surprises planned!* 🎊",
+            'itinerary': "📅 **Prime Outing 2025 Itinerary:**\n\n**October 3 (Friday):**\n🕘 8:00-9:00 PM: T-Shirt & Baggage Collection\n🚌 10:00 PM: Departure from Stellar IT Park\n\n**October 4 (Saturday):**\n🏨 Full day at Punarnava Resort\n🎉 Activities, DJ Night & Fun!\n\n**October 5 (Sunday):**\n🕘 10:30 AM: Departure from resort\n🏠 7:00 PM: Return to Stellar IT Park",
+            'schedule': "📅 **Prime Outing 2025 Schedule:**\n\n**October 3 (Friday):**\n🕘 8:00-9:00 PM: T-Shirt & Baggage Collection\n🚌 10:00 PM: Departure from Stellar IT Park\n\n**October 4 (Saturday):**\n🏨 Full day at Punarnava Resort\n🎉 Activities, DJ Night & Fun!\n\n**October 5 (Sunday):**\n🕘 10:30 AM: Departure from resort\n🏠 7:00 PM: Return to Stellar IT Park",
+            'resort': "🏨 **Punarnava Resort & Spa, Dehradun**\n\nOur accommodation for Prime Outing 2025!\n\n✨ **Features:**\n🏊 Swimming pool access\n🌿 Beautiful natural surroundings\n🍽️ Great dining facilities\n🏠 Comfortable rooms\n📧 **Questions?** PrimeEventCommittee@tsys.com",
+            'food': "🍽️ **Food & Dining:**\n\nEnjoy delicious meals at Punarnava Resort!\n\n🥘 **Included:**\n• Welcome refreshments\n• Breakfast, Lunch & Dinner\n• Evening snacks\n• Special event meals\n\n*Variety of vegetarian and non-vegetarian options available!*",
+            'departure': "🚌 **Departure Details - October 3:**\n\n🕘 **8:00-9:00 PM:** T-Shirt, Baggage & Attendance\n🕘 **9:30 PM:** Assemble at Stellar IT Park\n🚌 **10:00 PM:** Bus departure for Dehradun\n🍽️ **12:00 AM:** Stop at SukhDev Dhaba\n\n⏰ **Please arrive on time!**",
+            'return': "🏠 **Return Details - October 5:**\n\n🕘 **10:30 AM:** Departure from resort\n🍽️ **3:00-4:30 PM:** Lunch break\n🏠 **7:00 PM:** Arrival at Stellar IT Park\n\n🚌 **Safe journey back home!**",
+            'tshirt': "👕 **T-Shirt Collection:**\n\nCollect your custom Prime Outing 2025 T-shirts!\n\n📅 **When:** October 3, 8:00-9:00 PM\n📍 **Where:** Stellar IT Park\n🎯 **Don't forget** to collect during attendance marking!\n\n*Wear it with pride during the trip!* 🎉",
+            'bring': "🎒 **What to Bring for Prime Outing 2025:**\n\n**👕 Clothing:**\n• Comfortable casual clothes (2-3 sets)\n• Light jacket/sweater for evening\n• Sleepwear and undergarments\n• Extra pair of shoes/slippers\n\n**🧴 Personal Items:**\n• Toiletries (toothbrush, toothpaste, etc.)\n• Personal medications\n• Phone charger and power bank\n• Camera for memories\n\n**📋 Documents:**\n• Valid ID proof\n• Any medical prescriptions\n\n**💡 Optional:**\n• Sunglasses and sunscreen\n• Small backpack for day activities\n• Snacks for the journey\n\n*Pack light and enjoy the trip!* 🌟",
+            'packing': "🎒 **Packing Guide for Prime Outing 2025:**\n\n**👕 Clothing Essentials:**\n• 2-3 comfortable outfits\n• Light jacket for cool evenings\n• Comfortable walking shoes\n• Flip-flops/slippers for resort\n\n**🧴 Personal Care:**\n• Toiletries and personal hygiene items\n• Any personal medications\n• Hand sanitizer\n\n**📱 Electronics:**\n• Phone charger (mandatory!)\n• Power bank for long day\n• Camera/phone for photos\n\n**📄 Important:**\n• Valid photo ID\n• Emergency contact details\n\n**💼 Travel Tips:**\n• Pack in a small bag/backpack\n• Keep essentials in carry-on\n• Don't overpack - it's only 2 days!\n\n*Travel light, create memories!* ✨",
+            'dj': "🎵 **DJ Night - Prime Outing 2025:**\n\n*Get ready to dance the night away!*\n\n🕘 **When:** October 4 evening (Saturday)\n📍 **Where:** Punarnava Resort party area\n🎶 **Music:** Latest hits, Bollywood, and your favorites\n💃 **Dress:** Comfortable party wear\n\n**🎉 What to Expect:**\n• Professional DJ with great sound system\n• Dance floor with lighting effects\n• Fun group activities and games\n• Refreshments and snacks\n• Photo opportunities\n\n**💡 Tips:**\n• Wear comfortable dancing shoes\n• Bring your energy and enthusiasm!\n• Request your favorite songs\n\n*Let's make it a night to remember!* ✨",
+            'stargazing': "🌟 **Stargazing - \"Taaron ki chaanv\":**\n\n*Experience the magic of the night sky!*\n\n🕘 **When:** October 4 late evening (after DJ session)\n📍 **Where:** Open area at Punarnava Resort\n🌌 **Experience:** Peaceful stargazing session\n\n**✨ What to Expect:**\n• Clear mountain sky views\n• Relaxing atmosphere\n• Perfect for photos\n• Quiet time with colleagues\n• Beautiful Dehradun night views\n\n**💡 Tips:**\n• Bring a light jacket (gets cool at night)\n• Perfect time for group photos\n• Enjoy the peaceful mountain air\n\n*Under the canopy of stars!* 🌠",
+            'swimming': "🏊 **Swimming Pool - Punarnava Resort:**\n\n*Relax and unwind in style!*\n\n🕘 **Available:** Throughout your stay\n📍 **Where:** Resort swimming pool area\n🌊 **Type:** Clean, well-maintained pool\n\n**🏊‍♀️ What to Expect:**\n• Refreshing pool water\n• Pool area seating\n• Great for relaxation\n• Perfect for group photos\n• Safe and supervised area\n\n**💡 What to Bring:**\n• Swimming costume/swim wear\n• Towel (or use resort towels)\n• Flip-flops for pool area\n• Waterproof phone case for photos\n\n**⏰ Pool Hours:**\n• Check with resort for specific timings\n• Usually available during day hours\n\n*Dive into fun!* 💦",
+            'photography': "📸 **Group Photography Session:**\n\n*Capture memories that last forever!*\n\n🕘 **When:** October 4 (multiple sessions)\n📍 **Where:** Beautiful spots around Punarnava Resort\n📷 **Style:** Professional group photos\n\n**📸 What to Expect:**\n• Professional photographer\n• Multiple group combinations\n• Beautiful resort backdrop\n• Individual and team photos\n• Candid moments capture\n\n**💡 Photo Tips:**\n• Wear your Prime Outing 2025 T-shirt\n• Coordinate colors for group shots\n• Bring props if you want\n• Smile and have fun!\n\n**📱 Sharing:**\n• Photos will be shared with everyone\n• Perfect for social media\n• Great for office memories\n\n*Say cheese and create memories!* 📷✨",
+            'team': "🏆 **Team Building Activities:**\n\n*Strengthen bonds and have fun together!*\n\n🕘 **When:** October 4 (multiple sessions)\n📍 **Where:** Resort activity areas\n👥 **Format:** Interactive group activities\n\n**🎯 Activities Include:**\n• Fun team challenges\n• Problem-solving games\n• Communication exercises\n• Trust-building activities\n• Competitive fun games\n\n**🏅 What to Expect:**\n• Prizes for winning teams\n• Lots of laughter and fun\n• New friendships\n• Team spirit building\n• Memorable experiences\n\n**💡 Tips:**\n• Wear comfortable clothes\n• Participate enthusiastically\n• Support your teammates\n• Have a positive attitude\n\n*Together we achieve more!* 🤝",
+            'contact': "📧 **Contact Information:**\n\nFor any questions about Prime Outing 2025:\n\n✉️ **Email:** PrimeEventCommittee@tsys.com\n\n*We're here to help make your trip amazing!* 🌟",
+            'important reminders': "⚠️ **Important Reminders - Prime Outing 2025:**\n\n**📅 BEFORE DEPARTURE (Oct 3):**\n🕘 **8:00-9:00 PM** - T-Shirt & Baggage Collection at Stellar IT Park\n🕘 **9:30 PM** - Assembly time (Don't be late!)\n🚌 **10:00 PM** - Bus departure (Be punctual!)\n\n**🎒 MUST BRING:**\n📄 Valid photo ID (Mandatory!)\n🔌 Phone charger and power bank\n💊 Personal medications\n👕 Comfortable clothes for 2 days\n\n**📱 IMPORTANT:**\n📧 Save contact: PrimeEventCommittee@tsys.com\n📞 Keep emergency contacts handy\n🔋 Keep your phone charged\n\n**🚨 CRITICAL:**\n⏰ **October 3, 9:30 PM** - Last assembly call\n🚌 Bus will leave sharp at **10:00 PM**\n📍 Meet at **Stellar IT Park parking**\n\n*Don't miss out on the fun!* 🎉",
+            'things to remember': "📝 **Things to Remember - Prime Outing 2025:**\n\n**✅ BEFORE LEAVING HOME:**\n📄 Check you have valid photo ID\n🔌 Pack phone charger & power bank (essential!)\n💊 Bring personal medicines\n🧳 Pack light - only 2 days!\n☔ Check weather forecast\n\n**✅ DEPARTURE DAY (Oct 3):**\n⏰ Reach Stellar IT Park by 9:30 PM\n👕 Collect your T-shirt (8-9 PM)\n📱 Keep phone charged & contacts saved\n🚌 Be ready for 10:00 PM departure\n\n**✅ DURING THE TRIP:**\n🏊 Bring swimwear for pool activities\n📸 Keep camera/phone ready for photos\n💃 Comfortable shoes for DJ night\n🌟 Light jacket for stargazing\n🤝 Participate in all activities!\n\n**✅ SAFETY FIRST:**\n📞 Save emergency contacts\n🏥 Inform about medical conditions\n💧 Stay hydrated throughout\n👥 Stay with the group\n\n*Have an amazing time!* 🎉✨",
+            'not going': "😔 **Sorry you're missing the fun, better luck next time!**\n\nWe'll definitely miss having you on this amazing trip to Dehradun. There will be more events in the future, so stay tuned!\n\n📧 **Stay connected:** PrimeEventCommittee@tsys.com for future events\n\n*Hope to see you at the next adventure!* 🌟",
+            'default': "I'm here to help with Prime Outing 2025 questions! You can ask about:\n\n🎉 **Activities** - What's planned for the trip\n📅 **Schedule** - Detailed itinerary\n🏨 **Resort** - Accommodation details\n🚌 **Transport** - Departure/return times\n� **What to bring** - Packing checklist\n�🎯 **Employee ID lookup** - Your bus & room info\n\nJust ask away! 😊"
+        };
+
+        // Generate basic response for non-employee queries
+        function generateBasicResponse(message) {
+            // Use the generateResponse function from script.js if available
+            if (typeof generateResponse === 'function') {
+                return generateResponse(message);
+            }
+            
+            // Fallback if script.js is not loaded
+            return "I'm here to help with Prime Outing 2025 questions! Just ask away! 😊";
+        }
+
+        // MAIN SEND MESSAGE FUNCTION
+        function sendMessage() {
+            console.log('=== SEND MESSAGE CALLED ===');
+            
+            const userInput = document.getElementById('userInput');
+            const message = userInput.value.trim();
+            
+            if (message === '') {
+                console.log('Empty message, returning');
+                return;
+            }
+            
+            console.log('Processing message:', message);
+            
+            // Add user message to chat
+            addMessage(message, 'user');
+            
+            // Clear input and reset height
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            
+            // Disable send button
+            const sendBtn = document.getElementById('sendButton');
+            if (sendBtn) sendBtn.disabled = true;
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Process message and generate response
+            setTimeout(() => {
+                hideTypingIndicator();
+                
+                console.log('=== GENERATING RESPONSE ===');
+                
+                let response;
+                
+                // Check for employee ID patterns (including alphanumeric) - enhanced patterns
+                const employeeIdPatterns = [
+                    /employee\s*id\s*:?\s*([a-zA-Z0-9]+)/i,
+                    /\bid\s*:?\s*([a-zA-Z0-9]+)/i,
+                    /my\s*id\s*is\s*([a-zA-Z0-9]+)/i,
+                    /my\s*employee\s*id\s*is\s*([a-zA-Z0-9]+)/i,
+                    /emp\s*id\s*:?\s*([a-zA-Z0-9]+)/i,
+                    /id\s*number\s*:?\s*([a-zA-Z0-9]+)/i,
+                    /employee\s*number\s*:?\s*([a-zA-Z0-9]+)/i,
+                    /^\s*([a-zA-Z0-9]{3,})\s*$/,  // Just an alphanumeric ID (minimum 3 characters)
+                    /\b([a-zA-Z]{1,2}\d{3,}|\d{3,}[a-zA-Z]{1,2}|\d{4,})\b/  // Common ID patterns like A123, 12A, 1234
+                ];
+                
+                const messageText = message.toLowerCase();
+                const isBusRoomQuery = messageText.includes('bus') || messageText.includes('room') || 
+                                     messageText.includes('transport') || messageText.includes('accommodation') ||
+                                     messageText.includes('assignment') || messageText.includes('details');
+                
+                console.log('Message text:', messageText);
+                console.log('Is bus/room query:', isBusRoomQuery);
+                
+                // Try to find employee ID
+                let foundEmployeeId = null;
+                
+                // Common words that should NOT be treated as Employee IDs
+                const excludeWords = ['my', 'the', 'bus', 'room', 'get', 'show', 'find', 'need', 'want', 'info', 'information'];
+                
+                for (const pattern of employeeIdPatterns) {
+                    const match = message.match(pattern);
+                    if (match && match[1]) {
+                        const potentialId = match[1].toLowerCase();
+                        
+                        // Skip if it's a common word or too short
+                        if (!excludeWords.includes(potentialId) && potentialId.length >= 3) {
+                            foundEmployeeId = match[1];
+                            console.log('Found employee ID:', foundEmployeeId, 'with pattern:', pattern);
+                            break;
+                        }
+                    }
+                }
+                
+                // Employee lookup logic (for specific ID patterns or bus/room queries with valid IDs)
+                if (foundEmployeeId && foundEmployeeId.length >= 3 && (isBusRoomQuery || /^\s*[a-zA-Z0-9]{3,}\s*$/.test(message.trim()))) {
+                    console.log('=== PERFORMING EMPLOYEE LOOKUP ===');
+                    response = lookupEmployee(foundEmployeeId);
+                }
+                // General bus/room request without ID
+                else if (isBusRoomQuery && !foundEmployeeId) {
+                    response = "🚌 **Need your bus and room information?**\n\nPlease provide your Employee ID in one of these formats:\n• 'My employee ID is 12345'\n• 'ID 12345'\n• 'Employee ID 12345'\n• Or just type your ID number: '12345'\n\nI'll look up your bus number and room assignment! 🏠";
+                }
+                // Use basic responses for other queries
+                else {
+                    console.log('Using basic response');
+                    response = generateBasicResponse(message);
+                }
+                
+                console.log('Final response:', response);
+                addMessage(response, 'bot');
+                
+                // Re-enable send button
+                if (sendBtn) sendBtn.disabled = false;
+                
+            }, 1000 + Math.random() * 1000); // Random delay between 1-2 seconds
+        }
+
+        // Employee lookup function for chatbot
+        function lookupEmployee(employeeId) {
+            console.log('=== LOOKUP EMPLOYEE FUNCTION CALLED ===');
+            console.log('Received employeeId parameter:', employeeId);
+            console.log('Parameter type:', typeof employeeId);
+            console.log('Employee data available:', employeeData);
+            console.log('Employee data length:', employeeData ? employeeData.length : 'undefined');
+            
+            if (!employeeData || employeeData.length === 0) {
+                console.log('No employee data available');
+                return "❌ Employee data not loaded. Please ensure PECData.xlsx is in the same folder or contact admin.";
+            }
+            
+            // Clean the employee ID (remove spaces, convert to string, handle case)
+            const cleanId = employeeId.toString().trim().toUpperCase();
+            console.log('Searching for cleaned ID:', cleanId);
+            
+            // Search for employee - with detailed logging (case-insensitive)
+            // Handle different possible column names for flexibility
+            const employee = employeeData.find(emp => {
+                // Try different possible column names for Employee ID
+                const possibleIdFields = ['EmployeeID', 'Employee ID', 'ID', 'EmpID', 'id', 'employeeId'];
+                let empId = '';
+                
+                for (const field of possibleIdFields) {
+                    if (emp[field]) {
+                        empId = emp[field].toString().trim().toUpperCase();
+                        break;
+                    }
+                }
+                
+                console.log('Comparing:', empId, 'with', cleanId);
+                return empId === cleanId;
+            });
+            
+            console.log('Found employee:', employee);
+            
+            if (employee) {
+                // Handle different possible column names for display
+                const getName = () => {
+                    return employee.Name || employee['Employee Name'] || employee.name || employee.employeeName || 'N/A';
+                };
+                
+                const getBusNumber = () => {
+                    return employee.BusNumber || employee['Bus Number'] || employee.Bus || employee.bus || employee.busNumber || 'N/A';
+                };
+                
+                const getRoomNumber = () => {
+                    return employee.RoomNumber || employee['Room Number'] || employee.Room || employee.room || employee.roomNumber || 'N/A';
+                };
+                
+                const result = `🎯 **Employee Found!**\n\n👤 **Name:** ${getName()}\n🚌 **Bus Number:** ${getBusNumber()}\n🏠 **Room Number:** ${getRoomNumber()}\n\n📧 For any changes, contact: PrimeEventCommittee@tsys.com`;
+                console.log('Returning result:', result);
+                return result;
+            } else {
+                console.log('Employee not found');
+                return `❌ **Employee ID "${employeeId}" not found.**\n\nPlease check your Employee ID and try again. If you believe this is an error, contact PrimeEventCommittee@tsys.com`;
+            }
+        }
+
+        // Function to load employee data from uploaded file (for admin use)
+        function loadEmployeeData(jsonData) {
+            console.log('loadEmployeeData called with:', jsonData);
+            console.log('Data type:', typeof jsonData);
+            console.log('Is array:', Array.isArray(jsonData));
+            
+            employeeData = jsonData;
+            console.log('Employee data loaded:', employeeData.length, 'records');
+            console.log('First few records:', employeeData.slice(0, 3));
+            
+            // Log the structure of the first record
+            if (employeeData.length > 0) {
+                console.log('First record structure:', Object.keys(employeeData[0]));
+                console.log('First record:', employeeData[0]);
+            }
+            
+            // Save to localStorage for persistence
+            const saved = saveEmployeeDataToStorage(jsonData);
+            
+            // Show a temporary notification that data was loaded
+            const persistenceMsg = saved ? ' Data will persist between browser sessions.' : '';
+            addMessage(`✅ **Employee data loaded successfully!** ${employeeData.length} employee records are now available for bus and room lookup.${persistenceMsg}`, 'bot');
+        }
+
+        // Function for admin to provide employee data via console
+        window.loadEmployeeDataFromConsole = function(data) {
+            if (Array.isArray(data) && data.length > 0) {
+                loadEmployeeData(data);
+                return `Loaded ${data.length} employee records successfully!`;
+            } else {
+                return 'Please provide a valid array of employee data';
+            }
+        };
+
+        // Show temporary notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50px;
+                right: 20px;
+                background: ${type === 'info' ? '#17a2b8' : '#28a745'};
+                color: white;
+                padding: 10px 15px;
+                border-radius: 8px;
+                font-family: 'Poppins', sans-serif;
+                font-size: 14px;
+                z-index: 1001;
+                animation: slideInRight 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Test function override
+        function testFunctionOverride() {
+            console.log('=== FUNCTION OVERRIDE TEST ===');
+            console.log('sendMessage type:', typeof sendMessage);
+            console.log('window.sendMessage type:', typeof window.sendMessage);
+            console.log('generateResponse type:', typeof generateResponse);
+            console.log('window.generateResponse type:', typeof window.generateResponse);
+            console.log('scriptSendMessage type:', typeof window.scriptSendMessage);
+            console.log('scriptGenerateResponse type:', typeof window.scriptGenerateResponse);
+            console.log('Employee data length:', employeeData ? employeeData.length : 'undefined');
+            
+            // Test employee lookup directly
+            const testResult = lookupEmployee('12345');
+            console.log('Direct lookup test for "12345":', testResult);
+            
+            document.getElementById('uploadStatus').innerHTML = `
+                <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; font-size: 12px;">
+                    <strong>System Status:</strong><br>
+                    ✅ sendMessage: ${typeof sendMessage}<br>
+                    ✅ addMessage: ${typeof addMessage}<br>
+                    ✅ lookupEmployee: ${typeof lookupEmployee}<br>
+                    📊 Employee records: ${employeeData ? employeeData.length : 0}<br>
+                    🧪 Test lookup: ${testResult.includes('Found') ? '✅ Working' : '❌ Check data'}
+                </div>
+            `;
+        }
+
+        // Excel file upload function
+        function uploadExcelFile() {
+            const fileInput = document.getElementById('excelFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showUploadStatus('error', '❌ Please select an Excel file first');
+                return;
+            }
+
+            showUploadStatus('info', '📂 Reading Excel file...');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    
+                    // Convert to JSON
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    // Validate required columns
+                    if (jsonData.length === 0) {
+                        throw new Error('Excel file is empty or has no data rows');
+                    }
+                    
+                    const requiredColumns = ['EmployeeID', 'Name', 'BusNumber', 'RoomNumber'];
+                    const firstRow = jsonData[0];
+                    const availableColumns = Object.keys(firstRow);
+                    const missingColumns = requiredColumns.filter(col => !availableColumns.includes(col));
+                    
+                    if (missingColumns.length > 0) {
+                        throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
+                    }
+                    
+                    // Load employee data
+                    loadEmployeeData(jsonData);
+                    showUploadStatus('success', `✅ Successfully loaded ${jsonData.length} employee records`);
+                    
+                } catch (error) {
+                    console.error('Error processing file:', error);
+                    showUploadStatus('error', `❌ Error: ${error.message}`);
+                }
+            };
+            
+            reader.onerror = function() {
+                showUploadStatus('error', '❌ Error reading file. Please try again.');
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        function toggleChatbot() {
+            const popup = document.getElementById('chatbotPopup');
+            const icon = document.getElementById('toggleIcon');
+            const badge = document.getElementById('notificationBadge');
+            
+            isOpen = !isOpen;
+            
+            if (isOpen) {
+                popup.classList.add('active');
+                icon.innerHTML = '<i class="fas fa-times"></i>';
+                badge.style.display = 'none';
+                hasNewMessage = false;
+                
+                // Focus input when opened
+                setTimeout(() => {
+                    document.getElementById('userInput').focus();
+                }, 300);
+            } else {
+                popup.classList.remove('active');
+                icon.innerHTML = '💬';
+            }
+        }
+
+        function sendQuickQuestion(question) {
+            const userInput = document.getElementById('userInput');
+            userInput.value = question;
+            sendMessage();
+        }
+
+        // Show notification when chatbot is closed and there's activity
+        function showNotification() {
+            const badge = document.getElementById('notificationBadge');
+            if (!isOpen && !hasNewMessage) {
+                badge.style.display = 'flex';
+                hasNewMessage = true;
+            }
+        }
+
+        // Enhanced auto-resize textarea
+        document.getElementById('userInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+            
+            // Enable/disable send button based on content
+            const sendBtn = document.getElementById('sendButton');
+            sendBtn.disabled = this.value.trim() === '';
+        });
+
+        // Send message on Enter (but not Shift+Enter)
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Show welcome notification after 3 seconds
+        setTimeout(() => {
+            if (!isOpen) {
+                showNotification();
+            }
+        }, 3000);
+
+        // Enhanced message display with typing indicator
+        const originalAddMessage = window.addMessage;
+        window.addMessage = function(message, sender) {
+            if (sender === 'bot') {
+                // Show typing indicator
+                showTypingIndicator();
+                
+                // Remove typing indicator and show message after delay
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    if (originalAddMessage) {
+                        originalAddMessage(message, sender);
+                    }
+                    
+                    // Show notification for bot messages when popup is closed
+                    if (!isOpen) {
+                        showNotification();
+                    }
+                }, 800);
+            } else {
+                if (originalAddMessage) {
+                    originalAddMessage(message, sender);
+                }
+            }
+        };
+
+        function showTypingIndicator() {
+            const chatMessages = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message typing-message';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingMessage = document.querySelector('.typing-message');
+            if (typingMessage) {
+                typingMessage.remove();
+            }
+        }
+
+        // Initialize send button state
+        document.getElementById('sendButton').disabled = true;
+    </script>
+</body>
+</html>
