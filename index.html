@@ -962,9 +962,47 @@
             setTimeout(() => {
                 hideTypingIndicator();
                 
-                console.log('=== GENERATING RESPONSE ===');
+                console.log('=== PRIORITY RESPONSE GENERATION ===');
                 
                 let response;
+                const messageText = message.toLowerCase();
+                console.log('Analyzing message:', messageText);
+                
+                // PRIORITY 1: T-shirt queries (HIGHEST PRIORITY)
+                if (messageText.indexOf('shirt') !== -1 || messageText.indexOf('collection') !== -1) {
+                    console.log('>>> T-SHIRT QUERY DETECTED <<<');
+                    response = generateBasicResponse(message);
+                    console.log('T-shirt response generated');
+                    addMessage(response, 'bot');
+                    if (sendBtn) sendBtn.disabled = false;
+                    return;
+                }
+                
+                // PRIORITY 2: Greeting queries
+                if (messageText === 'hello' || messageText === 'hi' || messageText === 'hii' || 
+                    messageText === 'hey' || messageText.indexOf('hello') !== -1) {
+                    console.log('>>> GREETING QUERY DETECTED <<<');
+                    response = generateBasicResponse(message);
+                    console.log('Greeting response generated');
+                    addMessage(response, 'bot');
+                    if (sendBtn) sendBtn.disabled = false;
+                    return;
+                }
+                
+                // PRIORITY 3: General trip queries (excluding "details" to avoid bus/room conflicts)
+                if (messageText.indexOf('dj') !== -1 || messageText.indexOf('activity') !== -1 || 
+                    messageText.indexOf('food') !== -1 || messageText.indexOf('schedule') !== -1 ||
+                    messageText.indexOf('itinerary') !== -1 || messageText.indexOf('weather') !== -1) {
+                    console.log('>>> GENERAL TRIP QUERY DETECTED <<<');
+                    response = generateBasicResponse(message);
+                    console.log('General response generated');
+                    addMessage(response, 'bot');
+                    if (sendBtn) sendBtn.disabled = false;
+                    return;
+                }
+                
+                // PRIORITY 4: Employee ID and bus/room logic (ONLY if none above match)
+                console.log('>>> CHECKING EMPLOYEE/BUS LOGIC <<<');
                 
                 // Check for employee ID patterns (including alphanumeric) - enhanced patterns
                 const employeeIdPatterns = [
@@ -979,12 +1017,10 @@
                     /\b([a-zA-Z]{1,2}\d{3,}|\d{3,}[a-zA-Z]{1,2}|\d{4,})\b/  // Common ID patterns like A123, 12A, 1234
                 ];
                 
-                const messageText = message.toLowerCase();
                 const isBusRoomQuery = messageText.includes('bus') || messageText.includes('room') || 
                                      messageText.includes('transport') || messageText.includes('accommodation') ||
                                      messageText.includes('assignment') || messageText.includes('details');
                 
-                console.log('Message text:', messageText);
                 console.log('Is bus/room query:', isBusRoomQuery);
                 
                 // Try to find employee ID
